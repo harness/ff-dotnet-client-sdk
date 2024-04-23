@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net461;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
+        <SupportedOSPlatformVersion>9.0</SupportedOSPlatformVersion>
+        <LangVersion>9.0</LangVersion>
+        <PackageId>ff-dotnet-client-sdk</PackageId>
+        <RootNamespace>io.harness.ff_dotnet_client_sdk</RootNamespace>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <Nullable>enable</Nullable>
+        <PackOnBuild>true</PackOnBuild>
+        <Version>0.1.0</Version>
+        <PackageVersion>0.1.0</PackageVersion>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
+        <Authors>support@harness.io</Authors>
+        <Copyright>Copyright © 2024</Copyright>
+        <PackageIconUrl>https://harness.io/icon-ff.svg</PackageIconUrl>
+        <PackageLicenseUrl>https://github.com/drone/ff-dotnet-client-sdk/blob/main/LICENSE</PackageLicenseUrl>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>https://github.com/drone/ff-dotnet-client-sdk</PackageProjectUrl>
+        <Summary>.NET Client SDK for Harness Feature Flag platform</Summary>
+        <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.34.0" />
+        <PackageReference Include="System.Diagnostics.TextWriterTraceListener" Version="4.3.0" />
+
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+
+
+        <!-- openapi -->
+        <PackageReference Include="JsonSubTypes" Version="2.0.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Polly" Version="8.1.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    </ItemGroup>
+
+    <!--
+    <ItemGroup>
+      <Folder Include="client\openapi\" />
+    </ItemGroup>
+-->
+
+    <ItemGroup>
+        <Compile Remove="tests\**;examples\**" />
+        <EmbeddedResource Remove="tests\**;examples\**" />
+        <None Remove="tests\**;examples\**" />
+    </ItemGroup>
+
+</Project>
