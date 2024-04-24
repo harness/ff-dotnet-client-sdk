@@ -1,0 +1,19 @@
+inputSet:
+  name: ffdotnetclientsdk_onpr
+  identifier: ffdotnetclientsdk_onpr
+  orgIdentifier: Feature_Flag
+  projectIdentifier: FFPipelines
+  pipeline:
+    identifier: ffdotnetclientsdk
+    variables:
+      - name: release
+        type: String
+        default: "false"
+        value: "false"
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
