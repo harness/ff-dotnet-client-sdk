@@ -1,0 +1,19 @@
+inputSet:
+  name: ffdotnetclientsdk_onrelease
+  identifier: ffdotnetclientsdk_onrelease
+  orgIdentifier: Feature_Flag
+  projectIdentifier: FFPipelines
+  pipeline:
+    identifier: ffdotnetclientsdk
+    variables:
+      - name: release
+        type: String
+        default: "false"
+        value: "true"
+    properties:
+      ci:
+        codebase:
+          build:
+            type: tag
+            spec:
+              tag: <+eventPayload.release.tag_name>
