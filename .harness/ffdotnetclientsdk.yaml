@@ -23,15 +23,6 @@ pipeline:
             steps:
               - step:
                   type: Run
-                  name: Init Submodule
-                  identifier: Init_Submodule
-                  spec:
-                    connectorRef: DockerHub
-                    image: golang:1.17.8
-                    shell: Sh
-                    command: "ls -l \n\nmkdir -p ~/.ssh\nssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts\n\ncat <<EOF > .gitmodules\n[submodule \"tests/ff-server-sdk-test/ff-test-cases\"]\n\tpath = tests/ff-server-sdk-test/ff-test-cases\n\turl = https://github.com/drone/ff-test-cases.git\nEOF\n\ngit submodule update --init --recursive"
-              - step:
-                  type: Run
                   name: Build
                   identifier: Build
                   spec:
@@ -44,7 +35,7 @@ pipeline:
                       type: JUnit
                       spec:
                         paths:
-                          - tests/ff-server-sdk-test/junit.xml
+                          - tests/ff-client-sdk-test/junit.xml
                     imagePullPolicy: IfNotPresent
                     resources:
                       limits:
@@ -111,12 +102,12 @@ pipeline:
                     shell: Sh
                     command: |-
                       echo "Running Test Coverage"
-                      dotnet test tests/ff-server-sdk-test/ff-server-sdk-test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
-                      ls -l tests/ff-server-sdk-test/
+                      dotnet test tests/ff-client-sdk-test/ff-client-sdk-test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+                      ls -l tests/ff-client-sdk-test/
                       echo "Done"
                       echo "Create HTML Test Coverage"
                       dotnet tool restore
-                      dotnet tool run reportgenerator -reports:./tests/ff-server-sdk-test/coverage.net7.0.cobertura.xml -targetdir:coverage
+                      dotnet tool run reportgenerator -reports:./tests/ff-client-sdk-test/coverage.net7.0.cobertura.xml -targetdir:coverage
                       echo "done"
                     resources:
                       limits:
