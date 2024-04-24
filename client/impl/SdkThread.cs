@@ -27,7 +27,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly ILoggerFactory _loggerFactory;
         private readonly string _apiKey;
         private readonly FfConfig _config;
-        private readonly FFTarget _ffTarget;
+        private readonly FfTarget _ffTarget;
         private readonly ConcurrentDictionary<string, Evaluation> _cache;
         private readonly CountdownEvent _sdkReadyLatch = new(1);
         private readonly Thread _thread;
@@ -37,7 +37,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private AuthInfo? _authInfo;
 
 
-        internal SdkThread(string apiKey, FfConfig config, FFTarget ffTarget, ILoggerFactory loggerFactory)
+        internal SdkThread(string apiKey, FfConfig config, FfTarget ffTarget, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<SdkThread>();
@@ -100,7 +100,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             }
         }
 
-        AuthInfo Authenticate(ClientApi api, string apiKey, FFTarget ffTarget)
+        AuthInfo Authenticate(ClientApi api, string apiKey, FfTarget ffTarget)
         {
             if (string.IsNullOrWhiteSpace(apiKey)) {
                 const string errorMsg = "SDKCODE(init:1002):The SDK has failed to initialize due to a missing or empty API key.";
@@ -156,10 +156,10 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             private readonly SdkThread _this;
             private readonly AuthInfo _authInfo;
             private readonly ClientApi _api;
-            private readonly FFTarget _target;
+            private readonly FfTarget _target;
             private readonly CountdownEvent _endStreamLatch = new(1);
 
-            internal StreamSourceListener(SdkThread sdkThread, ClientApi api, AuthInfo authInfo, FFTarget target, ILoggerFactory loggerFactory)
+            internal StreamSourceListener(SdkThread sdkThread, ClientApi api, AuthInfo authInfo, FfTarget target, ILoggerFactory loggerFactory)
             {
                 _logger = loggerFactory.CreateLogger<StreamSourceListener>();
                 _this = sdkThread;

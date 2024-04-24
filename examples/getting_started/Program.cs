@@ -29,7 +29,7 @@ public static class Program
         /*
          * Define your target (and attributes for any server side rules you may have)
          */
-        FFTarget target = new FFTarget("dotnetclientsdk", ".NET Client SDK",
+        FfTarget target = new FfTarget("dotnetclientsdk", ".NET Client SDK",
             new Dictionary<string, string> { { "email", "person@myorg.com" }});
 
         /*

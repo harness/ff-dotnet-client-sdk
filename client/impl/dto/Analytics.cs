@@ -7,12 +7,12 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl.dto
     internal class Analytics : IEquatable<Analytics>
     {
 
-        internal FFTarget Target { get; }
+        internal FfTarget Target { get; }
         internal string EvaluationId { get; }
         internal Variation Variation { get; }
 
         internal Analytics(
-            FFTarget target,
+            FfTarget target,
             string evaluationId,
             Variation variation
         )

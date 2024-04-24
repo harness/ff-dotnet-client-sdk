@@ -17,7 +17,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
         private MetricsThread? _metricsThread;
         private FfConfig? _configuration;
 
-        public void Initialize(string apiKey, FfConfig config, FFTarget target)
+        public void Initialize(string apiKey, FfConfig config, FfTarget target)
         {
             try {
                 _configuration = config;

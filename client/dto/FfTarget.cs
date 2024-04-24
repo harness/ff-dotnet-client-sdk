@@ -3,14 +3,14 @@ using System.Linq;
 
 namespace io.harness.ff_dotnet_client_sdk.client.dto
 {
-    public class FFTarget
+    public class FfTarget
     {
         public static TargetBuilder Builder()
         {
             return new TargetBuilder();
         }
         
-        public FFTarget(string identifier, string name, Dictionary<string, string>? attributes = null)
+        public FfTarget(string identifier, string name, Dictionary<string, string>? attributes = null)
         {
             Attributes = attributes ?? new Dictionary<string, string>();
             Identifier = identifier;
@@ -36,7 +36,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.dto
         
         public override bool Equals(object obj)
         {
-            if (obj is FFTarget other)
+            if (obj is FfTarget other)
             {
                 return Identifier == other.Identifier && AreDictionariesEqual(Attributes, other.Attributes);
             }
@@ -106,9 +106,9 @@ namespace io.harness.ff_dotnet_client_sdk.client.dto
             return this;
         }
 
-        public FFTarget Build()
+        public FfTarget Build()
         {
-            return new FFTarget(_identifier, _name, _attributes);
+            return new FfTarget(_identifier, _name, _attributes);
         }
     }
 }
