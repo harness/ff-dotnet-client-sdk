@@ -8,10 +8,10 @@ using io.harness.ff_dotnet_client_sdk.openapi.Model;
 
 namespace io.harness.ff_dotnet_client_sdk.client
 {
-    public class FFClient : IDisposable
+    public class FfClient : IDisposable
     {
         private ILoggerFactory _loggerFactory = ConfigBuilder.DefaultLoggerFactory;
-        private ILogger<FFClient> _logger = ConfigBuilder.DefaultLoggerFactory.CreateLogger<FFClient>();
+        private ILogger<FfClient> _logger = ConfigBuilder.DefaultLoggerFactory.CreateLogger<FfClient>();
 
         private SdkThread? _sdkThread;
         private MetricsThread? _metricsThread;
@@ -22,7 +22,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
             try {
                 _configuration = config;
                 _loggerFactory = config.LoggerFactory;
-                _logger = _loggerFactory.CreateLogger<FFClient>();
+                _logger = _loggerFactory.CreateLogger<FfClient>();
 
                 SdkCodes.LogUtils.Setup(config);
 

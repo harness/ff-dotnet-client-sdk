@@ -36,7 +36,7 @@ public class FFClientTest
         var target = new FFTarget("dotNETTest", "dotNETTest");
         var config = FfConfig.Builder().Build();
         
-        using var client = new FFClient();
+        using var client = new FfClient();
 
 
         Assert.Throws<FfClientException>(

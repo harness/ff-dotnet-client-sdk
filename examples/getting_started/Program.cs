@@ -35,7 +35,7 @@ public static class Program
         /*
          * Setup the SDK
          */
-        using var client = new FFClient();
+        using var client = new FfClient();
         client.Initialize(apiKey, config, target);
 
         if (!client.WaitForInitialization(600_000))
