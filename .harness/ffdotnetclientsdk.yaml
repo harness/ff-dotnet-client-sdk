@@ -216,7 +216,7 @@ pipeline:
     ci:
       codebase:
         connectorRef: ffsdks
-        repoName: ff-dotnet-server-sdk
+        repoName: ff-dotnet-client-sdk
         build: <+input>
   identifier: ffdotnetclientsdk
   description: The Feature Flag ff-dotnet-client-sdk CI build
