@@ -37,12 +37,12 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly ILogger<EventSource> _logger;
         //private readonly AuthInfo _authInfo;
         private readonly string _url;
-        private readonly FFConfig _config;
+        private readonly FfConfig _config;
         private readonly HttpClient _httpClient;
         private readonly IEventSourceListener _callback;
         private const int ReadTimeoutMs = 60_000;
 
-        internal EventSource(AuthInfo authInfo, string url, FFConfig config, IEventSourceListener callback, ILoggerFactory loggerFactory)
+        internal EventSource(AuthInfo authInfo, string url, FfConfig config, IEventSourceListener callback, ILoggerFactory loggerFactory)
         {
             _httpClient = MakeHttpClient(authInfo);
             _url = url;

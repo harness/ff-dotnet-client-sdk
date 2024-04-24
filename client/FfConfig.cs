@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace io.harness.ff_dotnet_client_sdk.client
 {
-    public class FFConfig
+    public class FfConfig
     {
         public string ConfigUrl { get; }
         public string EventUrl { get; }
@@ -20,7 +20,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
         public List<X509Certificate2> TlsTrustedCAs { get; }
         public ILoggerFactory LoggerFactory { get; }
 
-        internal FFConfig(string configUrl, string eventUrl, int pollIntervalInSeconds, int metricsIntervalInSeconds, bool streamEnabled, bool analyticsEnabled, int metricsCapacity, bool debug, List<X509Certificate2> tlsTrustedCAs, ILoggerFactory loggerFactory)
+        internal FfConfig(string configUrl, string eventUrl, int pollIntervalInSeconds, int metricsIntervalInSeconds, bool streamEnabled, bool analyticsEnabled, int metricsCapacity, bool debug, List<X509Certificate2> tlsTrustedCAs, ILoggerFactory loggerFactory)
         {
             ConfigUrl = configUrl;
             EventUrl = eventUrl;
@@ -63,9 +63,9 @@ namespace io.harness.ff_dotnet_client_sdk.client
         private List<X509Certificate2> _tlsTrustedCAs = new ();
         private ILoggerFactory _loggerFactory = DefaultLoggerFactory;
 
-        public FFConfig Build()
+        public FfConfig Build()
         {
-            return new FFConfig(_configUrl, _eventUrl, _pollIntervalInSeconds, _metricsIntervalInSeconds, _streamEnabled, _analyticsEnabled, _metricsCapacity, _debug, _tlsTrustedCAs, _loggerFactory);
+            return new FfConfig(_configUrl, _eventUrl, _pollIntervalInSeconds, _metricsIntervalInSeconds, _streamEnabled, _analyticsEnabled, _metricsCapacity, _debug, _tlsTrustedCAs, _loggerFactory);
         }
 
         public ConfigBuilder SetPollingInterval(int pollIntervalInSeconds)

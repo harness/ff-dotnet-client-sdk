@@ -77,7 +77,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         //logger.LogError("SDKCODE(stream:7002): Posting metrics failed, reason: {reason}", ex.Message);
         internal static class LogUtils
         {
-            internal static void LogExceptionAndWarn(ILogger logger, FFConfig config, string message, Exception exception)
+            internal static void LogExceptionAndWarn(ILogger logger, FfConfig config, string message, Exception exception)
             {
                 logger.LogWarning("{Message}:{ExceptionMessage}", message, exception.Message);
 
@@ -87,7 +87,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 }
             }
 
-            internal static void LogExceptionAndInfo(ILogger logger, FFConfig config, string message, Exception exception)
+            internal static void LogExceptionAndInfo(ILogger logger, FfConfig config, string message, Exception exception)
             {
                 logger.LogInformation("{Message}:{ExceptionMessage}", message, exception.Message);
 
@@ -97,7 +97,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 }
             }
 
-            public static void LogException(FFConfig config, Exception exception)
+            public static void LogException(FfConfig config, Exception exception)
             {
                 if (config.Debug)
                 {
@@ -105,7 +105,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 }
             }
 
-            public static void Setup(FFConfig config)
+            public static void Setup(FfConfig config)
             {
 #if !NETSTANDARD2_0
                 if (config.Debug)

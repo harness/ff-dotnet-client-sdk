@@ -34,7 +34,7 @@ public class FFClientTest
     public void ShouldThrowExceptionIfApiKeyIsBlankOrNull()
     {
         var target = new FFTarget("dotNETTest", "dotNETTest");
-        var config = FFConfig.Builder().Build();
+        var config = FfConfig.Builder().Build();
         
         using var client = new FFClient();
 

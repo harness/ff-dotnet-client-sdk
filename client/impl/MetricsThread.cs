@@ -28,7 +28,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly ILogger<MetricsThread> _logger;
         private readonly Thread _thread;
         private readonly FFTarget _target;
-        private readonly FFConfig _config;
+        private readonly FfConfig _config;
         private readonly int _maxFreqMapSize;
         private readonly FrequencyMap<Analytics> _frequencyMap = new();
         private readonly MetricsApi _api;
@@ -37,7 +37,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private int _evalCounter;
         private int _metricsEvaluationsDropped;
 
-        internal MetricsThread(FFTarget target, FFConfig config, ILoggerFactory loggerFactory, AuthInfo? authInfo)
+        internal MetricsThread(FFTarget target, FfConfig config, ILoggerFactory loggerFactory, AuthInfo? authInfo)
         {
             if (authInfo == null) throw new ArgumentNullException(nameof(authInfo));
             _logger = loggerFactory.CreateLogger<MetricsThread>();

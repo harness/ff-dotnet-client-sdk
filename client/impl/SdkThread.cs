@@ -26,7 +26,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly ILogger<SdkThread> _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly string _apiKey;
-        private readonly FFConfig _config;
+        private readonly FfConfig _config;
         private readonly FFTarget _ffTarget;
         private readonly ConcurrentDictionary<string, Evaluation> _cache;
         private readonly CountdownEvent _sdkReadyLatch = new(1);
@@ -37,7 +37,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private AuthInfo? _authInfo;
 
 
-        internal SdkThread(string apiKey, FFConfig config, FFTarget ffTarget, ILoggerFactory loggerFactory)
+        internal SdkThread(string apiKey, FfConfig config, FFTarget ffTarget, ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<SdkThread>();

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using io.harness.ff_dotnet_client_sdk.client;
+﻿using io.harness.ff_dotnet_client_sdk.client;
 using io.harness.ff_dotnet_client_sdk.client.dto;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -12,8 +11,8 @@ public static class Program
 
     public static void Main(string[] args)
     {
-        string? apiKey = Environment.GetEnvironmentVariable("FF_API_KEY");
-        string flagName = Environment.GetEnvironmentVariable("FF_FLAG_NAME") ?? "harnessappdemodarkmode";
+        var apiKey = Environment.GetEnvironmentVariable("FF_API_KEY");
+        var flagName = Environment.GetEnvironmentVariable("FF_FLAG_NAME") ?? "harnessappdemodarkmode";
 
         if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(flagName)) throw new Exception("Please set FF_API_KEY and FF_FLAG_NAME");
 
@@ -25,7 +24,7 @@ public static class Program
 
 
 
-        var config = FFConfig.Builder().LoggerFactory(loggerFactory).Debug(true).Build();
+        var config = FfConfig.Builder().LoggerFactory(loggerFactory).Debug(true).Build();
 
         /*
          * Define your target (and attributes for any server side rules you may have)
