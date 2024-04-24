@@ -1,0 +1,19 @@
+inputSet:
+  name: ffdotnetclientsdk
+  identifier: ffdotnetclientsdk
+  orgIdentifier: Feature_Flag
+  projectIdentifier: FFPipelines
+  pipeline:
+    identifier: ffdotnetclientsdk
+    variables:
+      - name: release
+        type: String
+        default: "false"
+        value: "false"
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: main
