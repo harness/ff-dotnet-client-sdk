@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using io.harness.ff_dotnet_client_sdk.client.dto;
 using io.harness.ff_dotnet_client_sdk.client.impl.dto;
+using io.harness.ff_dotnet_client_sdk.client.impl.util;
 using io.harness.ff_dotnet_client_sdk.openapi.Api;
 using io.harness.ff_dotnet_client_sdk.openapi.Client;
 using io.harness.ff_dotnet_client_sdk.openapi.Model;
@@ -44,7 +45,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             _target = target;
             _config = config;
             _maxFreqMapSize = Clamp(config.MetricsCapacity, 2048, MaxFreqMapToRetain);
-            _api = MakeClientApi(authInfo);
+            _api = MakeClientApi(authInfo, loggerFactory);
             _authInfo = authInfo;
             _thread = new Thread(Run);
             _thread.Start();
@@ -219,37 +220,14 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         }
 
-        private MetricsApi MakeClientApi(AuthInfo? authInfo)
+        private MetricsApi MakeClientApi(AuthInfo authInfo, ILoggerFactory loggerFactory)
         {
-            var apiConfig = new Configuration
-            {
-                BasePath = _config.ConfigUrl,
-                //ClientCertificates =
-                //RemoteCertificateValidationCallback =
-                UserAgent = SdkThread.UserAgentHeader,
-                Timeout = SdkThread.DefaultTimeoutMs,
-            };
-
-            var httpClientHandler = new HttpClientHandler()
-            {
-
-            };
-
-            var httpClient = new HttpClient()
-            {
-                Timeout = TimeSpan.FromMilliseconds(SdkThread.DefaultTimeoutMs),
-                //DefaultRequestHeaders = {  }
-            };
-
-            var api = new MetricsApi(httpClient, _config.EventUrl, httpClientHandler);
-
+            var client = TlsUtils.CreateHttpClientWithTls(_config, loggerFactory);
+            client.BaseAddress = new Uri(_config.EventUrl);
+            client.Timeout = TimeSpan.FromMilliseconds(SdkThread.DefaultTimeoutMs);
+            var api = new MetricsApi(client, _config.EventUrl);
             api.Configuration.DefaultHeaders.Clear();
-            api.Configuration.DefaultHeaders.Add("Authorization", "Bearer " + authInfo?.BearerToken);
-            api.Configuration.DefaultHeaders.Add("Harness-EnvironmentID", authInfo?.EnvironmentIdentifier ?? "");
-            api.Configuration.DefaultHeaders.Add("Harness-AccountID", authInfo?.AccountId ?? "");
-            api.Configuration.DefaultHeaders.Add("User-Agent", SdkThread.UserAgentHeader);
-            api.Configuration.DefaultHeaders.Add("Harness-SDK-Info", SdkThread.HarnessSdkInfoHeader);
-
+            SdkThread.AddSdkHeaders(api.Configuration.DefaultHeaders, authInfo);
             return api;
         }
 

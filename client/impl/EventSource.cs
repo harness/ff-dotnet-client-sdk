@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using io.harness.ff_dotnet_client_sdk.client.impl.dto;
+using io.harness.ff_dotnet_client_sdk.client.impl.util;
 using io.harness.ff_dotnet_client_sdk.openapi.Model;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -44,27 +45,45 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         internal EventSource(AuthInfo authInfo, string url, FfConfig config, IEventSourceListener callback, ILoggerFactory loggerFactory)
         {
-            _httpClient = MakeHttpClient(authInfo);
+            _httpClient = MakeHttpClient(authInfo, config, loggerFactory);
             _url = url;
             _config = config;
             _callback = callback;
             _logger = loggerFactory.CreateLogger<EventSource>();
         }
 
-        private static HttpClient MakeHttpClient(AuthInfo authInfo)
-        {
-            var httpClient = new HttpClient()
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue("Bearer", authInfo.BearerToken)
-                    //UserAgent
-                },
-                Timeout = TimeSpan.FromMilliseconds(ReadTimeoutMs)
-            };
 
-            httpClient.DefaultRequestHeaders.Add("API-Key", authInfo.ApiKey);
-            return httpClient;
+        /*
+                 private MetricsApi MakeClientApi(AuthInfo authInfo, ILoggerFactory loggerFactory)
+           {
+               var client = TlsUtils.CreateHttpClientWithTls(_config, loggerFactory);
+               client.BaseAddress = new Uri(_config.EventUrl);
+               client.Timeout = TimeSpan.FromMilliseconds(SdkThread.DefaultTimeoutMs);
+               var api = new MetricsApi(client, _config.EventUrl);
+               api.Configuration.DefaultHeaders.Clear();
+               SdkThread.AddSdkHeaders(api.Configuration.DefaultHeaders, authInfo);
+               return api;
+           }
+         */
+
+        private static HttpClient MakeHttpClient(AuthInfo authInfo, FfConfig config, ILoggerFactory loggerFactory)
+        {
+            var client = TlsUtils.CreateHttpClientWithTls(config, loggerFactory);
+            client.Timeout = TimeSpan.FromMilliseconds(SdkThread.DefaultTimeoutMs);
+            client.DefaultRequestHeaders.Add("API-Key", authInfo.ApiKey);
+            AddSdkHeaders(client.DefaultRequestHeaders, authInfo);
+            return client;
+        }
+
+        private static void AddSdkHeaders(HttpRequestHeaders httpRequestHeaders, AuthInfo authInfo)
+        {
+            var headers = new Dictionary<string, string>();
+            SdkThread.AddSdkHeaders(headers, authInfo);
+
+            foreach (var keyPair in headers)
+            {
+                httpRequestHeaders.Add(keyPair.Key, keyPair.Value);
+            }
         }
 
         private static string? ReadLine(Stream stream, int timeoutMs)

@@ -120,6 +120,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
           * <summary>
           *     List of trusted CAs - for when the given config/event URLs are signed with a private CA. You
           *     should include intermediate CAs too to allow the HTTP client to build a full trust chain.
+          *     <remarks>Requires .NET 5 targets or greater - netstandard and net4xx are not supported.</remarks>
           * </summary>
           */
         public ConfigBuilder TlsTrustedCAs(List<X509Certificate2> certs)

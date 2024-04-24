@@ -1,4 +1,5 @@
-﻿using io.harness.ff_dotnet_client_sdk.client;
+﻿using System.Security.Cryptography.X509Certificates;
+using io.harness.ff_dotnet_client_sdk.client;
 using io.harness.ff_dotnet_client_sdk.client.dto;
 using Serilog;
 using Serilog.Extensions.Logging;

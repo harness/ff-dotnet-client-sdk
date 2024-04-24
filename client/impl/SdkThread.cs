@@ -3,15 +3,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using io.harness.ff_dotnet_client_sdk.client.dto;
 using io.harness.ff_dotnet_client_sdk.client.impl.dto;
+using io.harness.ff_dotnet_client_sdk.client.impl.util;
 using io.harness.ff_dotnet_client_sdk.openapi.Api;
 using io.harness.ff_dotnet_client_sdk.openapi.Client;
 using io.harness.ff_dotnet_client_sdk.openapi.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using LogUtils = io.harness.ff_dotnet_client_sdk.client.impl.SdkCodes.LogUtils;
 
 namespace io.harness.ff_dotnet_client_sdk.client.impl
@@ -122,13 +126,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             var org = jwtToken.Payload.TryGetValue("organization", out value) ? value.ToString() : "";
             var projectId = jwtToken.Payload.TryGetValue("projectIdentifier", out value) ? value.ToString() : "";
 
-            api.Configuration.DefaultHeaders.Clear();
-            api.Configuration.DefaultHeaders.Add("Authorization", "Bearer " + authResp.AuthToken);
-            api.Configuration.DefaultHeaders.Add("Harness-EnvironmentID", environmentIdentifier);
-            api.Configuration.DefaultHeaders.Add("Harness-AccountID", accountId);
-            //api.Configuration.DefaultHeaders.Add("User-Agent", UserAgentHeader);
-            api.Configuration.DefaultHeaders.Add("Harness-SDK-Info", HarnessSdkInfoHeader);
-
             var authInfo = new AuthInfo
             {
                 Project = project,
@@ -141,6 +138,10 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 BearerToken = authResp.AuthToken,
                 ApiKey = apiKey
             };
+
+            api.Configuration.DefaultHeaders.Clear();
+            AddSdkHeaders(api.Configuration.DefaultHeaders, authInfo);
+
 
             PollOnce(api, authInfo);
 
@@ -247,8 +248,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             return true;
         }
 
-
-
         private void Poll(ClientApi api, AuthInfo authInfo)
         {
             var pollDelayInSeconds = Math.Max(_config.PollIntervalInSeconds, 60);
@@ -294,15 +293,21 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             bool threadInterrupted = false;
 
             do {
-                try {
+                try
+                {
                     _api?.Dispose();
                     _api = MakeClientApi();
                     MainSdkThread(_api);
-                } catch (ThreadInterruptedException) {
+                }
+                catch (ThreadInterruptedException)
+                {
                     // Dispose() will trigger this
                     _logger.LogTrace("SDK thread received an abort signal. Exiting.");
                     threadInterrupted = true;
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
+                    LogUtils.LogSdkCodeFromException(_logger, ex);
                     LogUtils.LogExceptionAndWarn(_logger, _config, "Root SDK exception handler invoked, SDK will be restarted in 1 minute:", ex);
                 }
 
@@ -316,29 +321,28 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         private ClientApi MakeClientApi()
         {
-            var apiConfig = new Configuration
-            {
-                BasePath = _config.ConfigUrl,
-                //ClientCertificates =
-                //RemoteCertificateValidationCallback =
-                UserAgent = UserAgentHeader,
-                Timeout = DefaultTimeoutMs,
-            };
-
-            var httpClientHandler = new HttpClientHandler()
-            {
-
-            };
-
-            var httpClient = new HttpClient()
-            {
-                Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs),
-                //DefaultRequestHeaders = {  }
-            };
-
-            return new ClientApi(httpClient, _config.ConfigUrl, httpClientHandler);
+            var client = TlsUtils.CreateHttpClientWithTls(_config, _loggerFactory);
+            client.BaseAddress = new Uri(_config.ConfigUrl);
+            client.Timeout = TimeSpan.FromMilliseconds(DefaultTimeoutMs);
+            return new ClientApi(client, _config.ConfigUrl);
         }
 
+        internal static void AddSdkHeaders(IDictionary<string, string> headers, AuthInfo authInfo)
+        {
+            headers.Add("Authorization", "Bearer " + authInfo.BearerToken);
+            headers.Add("Harness-SDK-Info", HarnessSdkInfoHeader);
+            headers.Add("User-Agent", UserAgentHeader);
+
+            if (!authInfo.AccountId.IsNullOrEmpty())
+            {
+                headers.Add("Harness-AccountID", authInfo.AccountId);
+            }
+
+            if (!authInfo.EnvironmentIdentifier.IsNullOrEmpty())
+            {
+                headers.Add("Harness-EnvironmentID", authInfo.EnvironmentIdentifier);
+            }
+        }
 
         private static bool IsEvaluationValid(Evaluation evaluation)
         {

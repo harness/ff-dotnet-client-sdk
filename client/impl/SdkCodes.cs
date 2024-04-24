@@ -1,11 +1,10 @@
 using System;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace io.harness.ff_dotnet_client_sdk.client.impl
 {
-
-
     internal static class SdkCodes
     {
         internal static void InfoPollingStopped(ILogger logger)
@@ -18,6 +17,12 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         {
             if (logger.IsEnabled(LogLevel.Error))
                 logger.LogError("SDKCODE(auth:1002): Missing or empty API key");
+        }
+
+        internal static void ErrorInvalidCertificate(ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+                logger.LogError("SDKCODE(auth:1004): Invalid TLS certificate chain - server not trusted");
         }
 
         internal static void InfoSdkAuthOk(ILogger logger, string sdkVersion)
@@ -77,9 +82,29 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         //logger.LogError("SDKCODE(stream:7002): Posting metrics failed, reason: {reason}", ex.Message);
         internal static class LogUtils
         {
+            private static string GetInnerExceptionNames(Exception exception)
+            {
+                Exception? ex = exception;
+                var builder = new StringBuilder();
+                while (ex != null)
+                {
+                    builder.Insert(0, " > ").Insert(0, ex.GetType().Name);
+                    ex = ex.InnerException;
+                }
+
+                builder.Length -= 3;
+                return builder.ToString();
+            }
+
+            internal static void LogSdkCodeFromException(ILogger logger, Exception ex)
+            {
+                if (LogUtils.IsTlsAuthenticationError(ex))
+                    SdkCodes.ErrorInvalidCertificate(logger);
+            }
+
             internal static void LogExceptionAndWarn(ILogger logger, FfConfig config, string message, Exception exception)
             {
-                logger.LogWarning("{Message}:{ExceptionMessage}", message, exception.Message);
+                logger.LogWarning("{Message}:[{ExceptionName}] {ExceptionMessage}", message, GetInnerExceptionNames(exception), exception.Message);
 
                 if (config.Debug)
                 {
@@ -97,13 +122,20 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 }
             }
 
-            public static void LogException(FfConfig config, Exception exception)
+            internal static void LogException(FfConfig config, Exception exception)
             {
                 if (config.Debug)
                 {
                     Console.WriteLine(exception.ToString());
                 }
             }
+
+            private static bool IsTlsAuthenticationError(Exception exception)
+            {
+                var text = GetInnerExceptionNames(exception);
+                return text.Contains("AuthenticationException") && text.Contains("HttpRequestException");
+            }
+
 
             public static void Setup(FfConfig config)
             {
