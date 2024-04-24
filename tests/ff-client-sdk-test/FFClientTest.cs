@@ -39,19 +39,19 @@ public class FFClientTest
         using var client = new FFClient();
 
 
-        Assert.Throws<FFClientException>(
+        Assert.Throws<FfClientException>(
             delegate { client.Initialize("", config, target); });
         
-        Assert.Throws<FFClientException>(
+        Assert.Throws<FfClientException>(
             delegate { client.Initialize(null, config, target); });
 
-        Assert.Throws<FFClientException>(
+        Assert.Throws<FfClientException>(
             delegate { client.Initialize("dummy", null, null); });
 
-        Assert.Throws<FFClientException>(
+        Assert.Throws<FfClientException>(
             delegate { client.Initialize("dummy", config, null); });
 
-        Assert.Throws<FFClientException>(
+        Assert.Throws<FfClientException>(
             delegate { client.Initialize("dummy", null, target); });
     }
 #pragma warning restore CS8625

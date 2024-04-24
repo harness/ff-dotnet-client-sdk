@@ -105,7 +105,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             if (string.IsNullOrWhiteSpace(apiKey)) {
                 const string errorMsg = "SDKCODE(init:1002):The SDK has failed to initialize due to a missing or empty API key.";
                 _logger.LogError(errorMsg);
-                throw new FFClientException(errorMsg);
+                throw new FfClientException(errorMsg);
             }
 
             var authTarget = new AuthenticationRequestTarget(ffTarget.Identifier, ffTarget.Name, false, ffTarget.Attributes);

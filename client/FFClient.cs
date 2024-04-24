@@ -28,22 +28,22 @@ namespace io.harness.ff_dotnet_client_sdk.client
 
                 if (string.IsNullOrEmpty(apiKey)) {
                     SdkCodes.ErrorMissingSdkKey(_logger);
-                    throw new FFClientException("Missing SDK key");
+                    throw new FfClientException("Missing SDK key");
                 }
 
                 if (target == null || _configuration == null) {
-                    throw new FFClientException("Target and configuration must not be null!");
+                    throw new FfClientException("Target and configuration must not be null!");
                 }
 
                 if (!target.IsValid()) {
-                    throw new FFClientException("Target not valid");
+                    throw new FfClientException("Target not valid");
                 }
 
                 _sdkThread = new SdkThread(apiKey, config, target, _loggerFactory);
 
                 if (config.AnalyticsEnabled) {
                     if (string.IsNullOrEmpty(config.EventUrl)) {
-                        throw new FFClientException("Event URL is null or empty");
+                        throw new FfClientException("Event URL is null or empty");
                     }
 
                     if (_sdkThread.WaitForInitialization(-1))
@@ -54,7 +54,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
             } catch (Exception e) {
                 _sdkThread?.Dispose();
                 _logger.LogWarning(e, e.Message);
-                throw new FFClientException("Initialize failed", e);
+                throw new FfClientException("Initialize failed", e);
             }
         }
 
@@ -65,7 +65,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
 
         public bool WaitForInitialization(int timeoutMs)
         {
-            if (_sdkThread == null) throw new FFClientException("Initialize() not called");
+            if (_sdkThread == null) throw new FfClientException("Initialize() not called");
             return _sdkThread.WaitForInitialization(timeoutMs);
         }
 
