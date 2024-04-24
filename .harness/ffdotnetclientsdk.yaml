@@ -1,288 +1,223 @@
----
 pipeline:
   allowStageExecutions: true
-  projectIdentifier: "FFPipelines"
-  orgIdentifier: "Feature_Flag"
+  projectIdentifier: FFPipelines
+  orgIdentifier: Feature_Flag
   tags:
     SDK: ""
   stages:
-  - stage:
-      name: "Build"
-      identifier: "Build"
-      type: "CI"
-      spec:
-        cloneCodebase: true
-        infrastructure:
-          type: "KubernetesDirect"
-          spec:
-            connectorRef: "ffplayci"
-            namespace: "default"
-            automountServiceAccountToken: true
-            nodeSelector: {}
-            os: "Linux"
-        execution:
-          steps:
-          - step:
-              type: "Run"
-              name: "Init Submodule"
-              identifier: "Init_Submodule"
-              spec:
-                connectorRef: "DockerHub"
-                image: "golang:1.17.8"
-                shell: "Sh"
-                command: "ls -l \n\nmkdir -p ~/.ssh\nssh-keyscan -t rsa github.com\
-                  \ >> ~/.ssh/known_hosts\n\ncat <<EOF > .gitmodules\n[submodule \"\
-                  tests/ff-server-sdk-test/ff-test-cases\"]\n\tpath = tests/ff-server-sdk-test/ff-test-cases\n\
-                  \turl = https://github.com/drone/ff-test-cases.git\nEOF\n\ngit submodule\
-                  \ update --init --recursive"
-          - step:
-              type: "Run"
-              name: "Build"
-              identifier: "Build"
-              spec:
-                connectorRef: "DockerHub"
-                image: "mcr.microsoft.com/dotnet/sdk:7.0"
-                shell: "Sh"
-                command: "./build.sh\n"
-                reports:
-                  type: "JUnit"
-                  spec:
-                    paths:
-                    - "tests/ff-server-sdk-test/junit.xml"
-                imagePullPolicy: "IfNotPresent"
-                resources:
-                  limits:
-                    memory: "8G"
-                    cpu: "4000m"
-          - step:
-              type: "Run"
-              name: "CVE scan"
-              identifier: "CVE_scan"
-              spec:
-                connectorRef: "platform205701"
-                image: "us.gcr.io/platform-205701/ff-sdk-sto-scanner:latest"
-                shell: "Bash"
-                command: "/run.sh\nfind .\ncat output_dotnet.json\n"
-                envVariables:
-                  CONTAINER_PATH_TO_SCAN: "."
-                imagePullPolicy: "Always"
-          - parallel:
-            - step:
-                type: "AquaTrivy"
-                name: "AquaTrivy ingest"
-                identifier: "AquaTrivy_ingest"
-                spec:
-                  mode: "ingestion"
-                  config: "default"
-                  target:
-                    type: "container"
-                    name: "AquaTrivy"
-                    variant: "main"
-                  advanced:
-                    log:
-                      level: "info"
-                    fail_on_severity: "medium"
-                  privileged: false
-                  ingestion:
-                    file: "./output_trivy.json"
-            - step:
-                type: "Owasp"
-                name: "Owasp injest"
-                identifier: "Owasp_injest"
-                spec:
-                  mode: "ingestion"
-                  config: "default"
-                  target:
-                    type: "repository"
-                    name: "OWASP"
-                    variant: "main"
-                  advanced:
-                    log:
-                      level: "info"
-                    fail_on_severity: "medium"
-                  ingestion:
-                    file: "./output_owasp.json"
-          - stepGroup:
-              name: "Testgrid image"
-              identifier: "Testgrid_image"
-              steps:
+    - stage:
+        name: Build
+        identifier: Build
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: ffplayci
+              namespace: default
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
               - step:
-                  type: "GitClone"
-                  name: "Clone ff-sdk-testgrid"
-                  identifier: "Clone_ffsdktestgrid"
+                  type: Run
+                  name: Init Submodule
+                  identifier: Init_Submodule
                   spec:
-                    connectorRef: "ffsdks"
-                    repoName: "ff-sdk-testgrid"
-                    cloneDirectory: "ff-sdk-testgrid"
-                    build:
-                      type: "branch"
+                    connectorRef: DockerHub
+                    image: golang:1.17.8
+                    shell: Sh
+                    command: "ls -l \n\nmkdir -p ~/.ssh\nssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts\n\ncat <<EOF > .gitmodules\n[submodule \"tests/ff-server-sdk-test/ff-test-cases\"]\n\tpath = tests/ff-server-sdk-test/ff-test-cases\n\turl = https://github.com/drone/ff-test-cases.git\nEOF\n\ngit submodule update --init --recursive"
+              - step:
+                  type: Run
+                  name: Build
+                  identifier: Build
+                  spec:
+                    connectorRef: DockerHub
+                    image: mcr.microsoft.com/dotnet/sdk:7.0
+                    shell: Sh
+                    command: |
+                      ./build.sh
+                    reports:
+                      type: JUnit
                       spec:
-                        branch: "main"
-                  description: "Get the source code for ff-sdk-testgrid so we can\
-                    \ build the .NET test grid container"
+                        paths:
+                          - tests/ff-server-sdk-test/junit.xml
+                    imagePullPolicy: IfNotPresent
+                    resources:
+                      limits:
+                        memory: 8G
+                        cpu: 4000m
               - step:
-                  type: "Run"
-                  name: "Copy SDK nuget to testgrid build"
-                  identifier: "Copy_SDK_nuget_to_testgrid_build"
+                  type: Run
+                  name: CVE scan
+                  identifier: CVE_scan
                   spec:
-                    connectorRef: "ffplay"
-                    image: "us.gcr.io/ff-play-335721/ff-ci-base:latest"
-                    shell: "Sh"
-                    command: "echo \"tag: <+codebase.tag>\"\nfind /harness\ncp /harness/bin/Debug/ff-dotnet-server-sdk.<+codebase.tag>.nupkg\
-                      \ /harness/ff-sdk-testgrid/dotnet/ff-dotnet-server-sdk.<+codebase.tag>.nupkg\n\
-                      find ."
-                  description: "Takes the nuget built earlier and places it into the\
-                    \ testgrid docker build folder"
+                    connectorRef: platform205701
+                    image: us.gcr.io/platform-205701/ff-sdk-sto-scanner:latest
+                    shell: Bash
+                    command: |
+                      /run.sh
+                      find .
+                      cat output_dotnet.json
+                    envVariables:
+                      CONTAINER_PATH_TO_SCAN: .
+                    imagePullPolicy: Always
+              - parallel:
+                  - step:
+                      type: AquaTrivy
+                      name: AquaTrivy ingest
+                      identifier: AquaTrivy_ingest
+                      spec:
+                        mode: ingestion
+                        config: default
+                        target:
+                          type: container
+                          name: AquaTrivy
+                          variant: main
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: medium
+                        privileged: false
+                        ingestion:
+                          file: ./output_trivy.json
+                  - step:
+                      type: Owasp
+                      name: Owasp injest
+                      identifier: Owasp_injest
+                      spec:
+                        mode: ingestion
+                        config: default
+                        target:
+                          type: repository
+                          name: OWASP
+                          variant: main
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: medium
+                        ingestion:
+                          file: ./output_owasp.json
               - step:
-                  type: "BuildAndPushGCR"
-                  name: "Build And Push testgrid image to GCR"
-                  identifier: "Build_And_Push_testgrid_image_to_GCR"
+                  type: Run
+                  name: Generate Test coverage
+                  identifier: Generate_Test_coverage
                   spec:
-                    connectorRef: "platform205701"
-                    host: "us.gcr.io"
-                    projectID: "platform-205701"
-                    imageName: "ff-testgrid-dotnet"
-                    tags:
-                    - "<+codebase.tag>"
-                    dockerfile: "ff-sdk-testgrid/dotnet/Dockerfile"
-                    context: "ff-sdk-testgrid/dotnet"
-                    buildArgs:
-                      SDK_VERSION: "<+codebase.tag>"
-                      BUILD_MODE: "local"
-              when:
-                stageStatus: "Success"
-                condition: "<+pipeline.variables.release>"
-          - step:
-              type: "Run"
-              name: "Generate Test coverage"
-              identifier: "Generate_Test_coverage"
-              spec:
-                connectorRef: "DockerHub"
-                image: "mcr.microsoft.com/dotnet/sdk:7.0"
-                shell: "Sh"
-                command: "echo \"Running Test Coverage\"\n\n\ndotnet test tests/ff-server-sdk-test/ff-server-sdk-test.csproj\
-                  \ /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura\nls\
-                  \ -l tests/ff-server-sdk-test/\necho \"Done\"\necho \"Create HTML\
-                  \ Test Coverage\"\ndotnet tool restore\ndotnet tool run reportgenerator\
-                  \ -reports:./tests/ff-server-sdk-test/coverage.net7.0.cobertura.xml\
-                  \ -targetdir:coverage\necho \"done\""
-                resources:
-                  limits:
-                    memory: "2G"
-                    cpu: "1000m"
-              when:
-                stageStatus: "Success"
-                condition: "false"
-          - parallel:
-            - step:
-                type: "Run"
-                name: "Publish"
-                identifier: "Publish"
-                spec:
-                  connectorRef: "DockerHub"
-                  image: "mcr.microsoft.com/dotnet/sdk:7.0"
-                  shell: "Sh"
-                  command: "\n#sed -i.bak -e '12d' /harness/examples/getting_started/getting_started.csproj\n\
-                    #dotnet add /harness/examples/getting_started/getting_started.csproj\
-                    \ package ff-dotnet-server-sdk -v 1.2.1\n#cat /harness/examples/getting_started/getting_started.csproj\n\
-                    \nrm -rf /harness/ff-sdk-testgrid/\ndotnet pack\ndotnet nuget\
-                    \ push /harness/bin/Debug/ff-dotnet-server-sdk.<+eventPayload.release.tag_name>.nupkg\
-                    \ --api-key <+pipeline.variables.nuget_token> --source https://api.nuget.org/v3/index.json\n"
-                when:
-                  stageStatus: "Success"
-                  condition: "<+pipeline.variables.release>"
-            - step:
-                type: "GCSUpload"
-                name: "Upload Test Coverage"
-                identifier: "Upload_Test_Coverage"
-                spec:
-                  connectorRef: "platform205701"
-                  bucket: "ff-test-coverage"
-                  sourcePath: "coverage"
-                  target: "ff-dotnet-sdk/"
-                when:
-                  stageStatus: "Success"
-                  condition: "false"
-          - step:
-              type: "Run"
-              name: "Make Test Coverage Public"
-              identifier: "Make_Test_Coverage_Public"
-              spec:
-                connectorRef: "DockerHub"
-                image: "us.gcr.io/ff-play-335721/ff-ci-base:latest"
-                shell: "Sh"
-                command: "# echo <+pipeline.variables.GCR_KEY_B64> > keyfile.b64\n\
-                  # base64 -d keyfile.b64 > keyfile.json\n# gcloud auth activate-service-account\
-                  \ platform-gcr-admin@platform-205701.iam.gserviceaccount.com --key-file=./keyfile.json\
-                  \ \n# gsutil -m acl set -R -a public-read gs://ff-test-coverage/ff-dotnet-sdk\n"
-              when:
-                stageStatus: "Success"
-                condition: "false"
-        sharedPaths:
-        - "/root/.dotnet/tools/"
-        - "/var/run"
-        caching:
-          enabled: false
-          paths: []
-        slsa_provenance:
-          enabled: false
-      when:
-        pipelineStatus: "Success"
-  - stage:
-      name: "Publish Release Notes"
-      identifier: "Publish_Release_Notes"
-      description: ""
-      type: "Approval"
-      spec:
-        execution:
-          steps:
-          - step:
-              name: "Jira Create"
-              identifier: "Jira_Create"
-              template:
-                templateRef: "ffsdkreleasenotestemplate"
-                versionLabel: "1"
-        serviceDependencies: []
-      tags: {}
-      when:
-        pipelineStatus: "Success"
-        condition: "<+pipeline.variables.release>"
+                    connectorRef: DockerHub
+                    image: mcr.microsoft.com/dotnet/sdk:7.0
+                    shell: Sh
+                    command: |-
+                      echo "Running Test Coverage"
+                      dotnet test tests/ff-server-sdk-test/ff-server-sdk-test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+                      ls -l tests/ff-server-sdk-test/
+                      echo "Done"
+                      echo "Create HTML Test Coverage"
+                      dotnet tool restore
+                      dotnet tool run reportgenerator -reports:./tests/ff-server-sdk-test/coverage.net7.0.cobertura.xml -targetdir:coverage
+                      echo "done"
+                    resources:
+                      limits:
+                        memory: 2G
+                        cpu: 1000m
+                  when:
+                    stageStatus: Success
+                    condition: "false"
+              - parallel:
+                  - step:
+                      type: Run
+                      name: Publish
+                      identifier: Publish
+                      spec:
+                        connectorRef: DockerHub
+                        image: mcr.microsoft.com/dotnet/sdk:7.0
+                        shell: Sh
+                        command: |
+
+                          dotnet pack
+                          dotnet nuget push /harness/bin/Debug/ff-dotnet-client-sdk.<+eventPayload.release.tag_name>.nupkg --api-key <+pipeline.variables.nuget_token> --source https://api.nuget.org/v3/index.json
+                      when:
+                        stageStatus: Success
+                        condition: <+pipeline.variables.release>
+                  - step:
+                      type: GCSUpload
+                      name: Upload Test Coverage
+                      identifier: Upload_Test_Coverage
+                      spec:
+                        connectorRef: platform205701
+                        bucket: ff-test-coverage
+                        sourcePath: coverage
+                        target: ff-dotnet-sdk/
+                      when:
+                        stageStatus: Success
+                        condition: "false"
+          sharedPaths:
+            - /root/.dotnet/tools/
+            - /var/run
+          caching:
+            enabled: false
+            paths: []
+          slsa_provenance:
+            enabled: false
+        when:
+          pipelineStatus: Success
+    - stage:
+        name: Publish Release Notes
+        identifier: Publish_Release_Notes
+        description: ""
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Jira Create
+                  identifier: Jira_Create
+                  template:
+                    templateRef: ffsdkreleasenotestemplate
+                    versionLabel: "1"
+          serviceDependencies: []
+        tags: {}
+        when:
+          pipelineStatus: Success
+          condition: <+pipeline.variables.release>
   variables:
-  - name: "github_token"
-    type: "Secret"
-    value: "davejohnstonffserver"
-  - name: "nuget_token"
-    type: "Secret"
-    value: "dotnet_nuget_token"
-  - name: "release"
-    type: "String"
-    default: "false"
-    value: "<+input>.allowedValues(true,false)"
-  - name: "GCR_KEY_B64"
-    type: "Secret"
-    description: ""
-    value: "Platform_GCR_KEY_b64"
-  - name: "SONAR_TOKEN"
-    type: "Secret"
-    description: ""
-    value: "FF_SONARQUBE_TOKEN"
+    - name: github_token
+      type: Secret
+      value: davejohnstonffserver
+    - name: nuget_token
+      type: Secret
+      value: dotnet_nuget_token
+    - name: release
+      type: String
+      default: "false"
+      value: <+input>.allowedValues(true,false)
+    - name: GCR_KEY_B64
+      type: Secret
+      description: ""
+      value: Platform_GCR_KEY_b64
+    - name: SONAR_TOKEN
+      type: Secret
+      description: ""
+      value: FF_SONARQUBE_TOKEN
   notificationRules:
-  - name: "FailedPipeline"
-    identifier: "FailedPipeline"
-    pipelineEvents:
-    - type: "PipelineFailed"
-    notificationMethod:
-      type: "Slack"
-      spec:
-        userGroups: []
-        webhookUrl: "<+variable.FF_SDK_BUILDS_SLACK_URL>"
-    enabled: true
+    - name: FailedPipeline
+      identifier: FailedPipeline
+      pipelineEvents:
+        - type: PipelineFailed
+      notificationMethod:
+        type: Slack
+        spec:
+          userGroups: []
+          webhookUrl: <+variable.FF_SDK_BUILDS_SLACK_URL>
+      enabled: true
   properties:
     ci:
       codebase:
-        connectorRef: "ffsdks"
-        repoName: "ff-dotnet-server-sdk"
-        build: "<+input>"
-  identifier: "ffdotnetclientsdk"
-  description: "The Feature Flag ff-dotnet-client-sdk CI build"
-  name: "ff-dotnet-client-sdk"
+        connectorRef: ffsdks
+        repoName: ff-dotnet-server-sdk
+        build: <+input>
+  identifier: ffdotnetclientsdk
+  description: The Feature Flag ff-dotnet-client-sdk CI build
+  name: ff-dotnet-client-sdk
