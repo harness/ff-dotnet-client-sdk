@@ -257,7 +257,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 Thread.Sleep(TimeSpan.FromSeconds(pollDelayInSeconds));
 
                 PollOnce(api, authInfo);
-            } while (true); // todo check for interrupted thread
+            } while (true);
         }
 
         private List<Evaluation> PollOnce(ClientApi api, AuthInfo authInfo)

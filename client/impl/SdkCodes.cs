@@ -79,7 +79,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 logger.LogWarning("SDKCODE(stream:7008): Metrics buffer is full and metrics will be discarded. Dropped Count={DroppedEvaluations}", droppedEvaluations);
         }
 
-        //logger.LogError("SDKCODE(stream:7002): Posting metrics failed, reason: {reason}", ex.Message);
         internal static class LogUtils
         {
             private static string GetInnerExceptionNames(Exception exception)
