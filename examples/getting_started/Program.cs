@@ -39,7 +39,7 @@ public static class Program
         using var client = new FfClient();
         client.Initialize(apiKey, config, target);
 
-        if (!client.WaitForInitialization(600_000))
+        if (!client.WaitForInitialization(60_000))
             throw new Exception("Timed out waiting for SDK to initialize");
 
 
