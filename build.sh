@@ -9,17 +9,14 @@ fi
 
 set -x
 
-dotnet pack ff-dotnet-client-sdk.csproj
-
 # Install Tools needed for build
 dotnet tool install --global coverlet.console --version 3.2.0
 dotnet tool install --global dotnet-reportgenerator-globaltool
-dotnet tool restore
 
 # Install Libraries needed for build and buld
 dotnet restore ff-dotnet-client-sdk.csproj
-dotnet build ff-dotnet-client-sdk.csproj --no-restore
-
+dotnet build ff-dotnet-client-sdk.csproj
+dotnet pack ff-dotnet-client-sdk.csproj
 
 # Run tests
 echo "Generating Test Report"

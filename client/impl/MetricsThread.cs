@@ -37,6 +37,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         private int _evalCounter;
         private int _metricsEvaluationsDropped;
+        private volatile bool _abortFlag;
 
         internal MetricsThread(FfTarget target, FfConfig config, ILoggerFactory loggerFactory, AuthInfo? authInfo)
         {
@@ -77,28 +78,26 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             SdkCodes.InfoMetricsThreadStarted(_logger, _config.MetricsIntervalInSeconds);
 
             var delay = TimeSpan.FromSeconds(_config.MetricsIntervalInSeconds);
-            var threadAborted = false;
             do
             {
                 try
                 {
-                    _logger.LogTrace("Pushing metrics to server");
+                    if (_config.Debug)
+                        _logger.LogInformation("Pushing metrics to server");
 
                     FlushMetrics();
                     Thread.Sleep(delay);
                 }
-                catch (ThreadInterruptedException)
-                {
-                    _logger.LogTrace("Metrics thread received an abort signal");
-                    threadAborted = true;
-                }
                 catch (Exception ex)
                 {
-                    SdkCodes.WarnPostingMetricsFailed(_logger, ex.Message);
-                    LogUtils.LogException(_config, ex);
-                    Thread.Sleep(delay);
+                    if (!_abortFlag)
+                    {
+                        SdkCodes.WarnPostingMetricsFailed(_logger, ex.Message);
+                        LogUtils.LogException(_config, ex);
+                        Thread.Sleep(delay);
+                    }
                 }
-            } while (!threadAborted);
+            } while (!_abortFlag);
 
             FlushMetrics();
             SdkCodes.InfoMetricsThreadExited(_logger);
@@ -233,6 +232,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         public void Dispose()
         {
+            _abortFlag = true;
             _thread.Interrupt();
             if (!_thread.Join(TimeSpan.FromMinutes(1)))
             {

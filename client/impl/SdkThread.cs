@@ -39,7 +39,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         /* Mutable state */
         private ClientApi? _api;
         private AuthInfo? _authInfo;
-
+        private volatile bool _abortFlag;
 
         internal SdkThread(string apiKey, FfConfig config, FfTarget ffTarget, ILoggerFactory loggerFactory)
         {
@@ -257,7 +257,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 Thread.Sleep(TimeSpan.FromSeconds(pollDelayInSeconds));
 
                 PollOnce(api, authInfo);
-            } while (true);
+            } while  (!_abortFlag);
         }
 
         private List<Evaluation> PollOnce(ClientApi api, AuthInfo authInfo)
@@ -270,6 +270,9 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 RepoSetEvaluation(authInfo.EnvironmentIdentifier, eval.Flag, eval);
                 _logger.LogTrace("EnvId={EnvironmentIdentifier} Flag={Flag} Value={Value}", authInfo.EnvironmentIdentifier, eval.Flag, eval.Value);
             }
+
+            if (_config.Debug)
+                _logger.LogInformation("Polling got {FlagCount} flags", evaluations.Count);
 
             return evaluations;
         }
@@ -290,8 +293,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         private void Run()
         {
-            bool threadInterrupted = false;
-
             do {
                 try
                 {
@@ -299,24 +300,29 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                     _api = MakeClientApi();
                     MainSdkThread(_api);
                 }
-                catch (ThreadInterruptedException)
-                {
-                    // Dispose() will trigger this
-                    _logger.LogTrace("SDK thread received an abort signal. Exiting.");
-                    threadInterrupted = true;
-                }
                 catch (Exception ex)
                 {
-                    LogUtils.LogSdkCodeFromException(_logger, ex);
-                    LogUtils.LogExceptionAndWarn(_logger, _config, "Root SDK exception handler invoked, SDK will be restarted in 1 minute:", ex);
+                    /* should the sdk thread abort unexpectedly it will be restarted here in 1 minute */
+
+                    if (!_abortFlag)
+                    {
+                        LogUtils.LogSdkCodeFromException(_logger, ex);
+                        LogUtils.LogExceptionAndWarn(_logger, _config, "Root SDK exception handler invoked, SDK will be restarted in 1 minute:", ex);
+
+                        try
+                        {
+                            Thread.Sleep(TimeSpan.FromMinutes(1));
+                        }
+                        catch (ThreadInterruptedException tiex)
+                        {
+                            LogUtils.LogExceptionAndWarn(_logger, _config, "SDK thread interrupted", tiex);
+                        }
+                    }
                 }
 
-                if (!threadInterrupted)
-                {
-                    /* should the sdk thread abort unexpectedly it will be restarted here */
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
-                }
-            } while (!threadInterrupted);
+            } while (!_abortFlag);
+
+            _logger.LogTrace("SDK thread received an abort signal. Exiting.");
         }
 
         private ClientApi MakeClientApi()
@@ -357,6 +363,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         public void Dispose()
         {
+            _abortFlag = true;
             _thread.Interrupt();
             if (!_thread.Join(TimeSpan.FromMinutes(1)))
             {
