@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "getting_started", "examples
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ff-client-sdk-test", "tests\ff-client-sdk-test\ff-client-sdk-test.csproj", "{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mauiapp_basic_example", "examples\mauiapp_basic_example\mauiapp_basic_example.csproj", "{CB88842A-0A22-4E0D-98BE-04035F1CE79B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
