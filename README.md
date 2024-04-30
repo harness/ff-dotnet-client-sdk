@@ -23,10 +23,8 @@ SDK API key should only be used in secure environments. See
 The library is packaged as multi-target supporting  `net461`,`netstandard2.0`,
 `net5.0`, `net6.0`, `net7.0` and `net8.0`.
 
-https://developer.harness.io/docs/feature-flags/get-started/java-quickstart#create-an-sdk-key
-
 ## Build Requirements
-If building from source you will need [.Net 7.0.404](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) or newer (dotnet --version)<br>
+If building from source you will need [.Net 7.0.404](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) or newer (`dotnet --version`)<br>
 
 ## Quickstart
 To follow along with our test code sample, make sure you’ve:
@@ -45,15 +43,14 @@ dotnet add package ff-dotnet-client-sdk
 ### Getting started
 See [getting_started](getting_started)
 
-This is a generic .NET application that targets `.net8.0`
+This is a generic .NET application that targets `.net8.0`. It will create an SDK instance with a target (plus some attributes) and loop for several
+iterations and exit. While it is running changing the flag  `harnessappdemodarkmode` via the UI will show the state in the console output.
 
 ### MAUI
 See [mauiapp_basic_example](mauiapp_basic_example).
 
-This is an example that shows you the client SDK working inside a
-[MAUI](https://dotnet.microsoft.com/en-us/apps/maui) app. MAUI allows
-you to deploy and target multiple platforms (such as Android, iOS, macOS)
-while keeping a single portable codebase.
+This is an example that shows you the client SDK working inside a [MAUI](https://dotnet.microsoft.com/en-us/apps/maui) app. MAUI allows you to deploy and target
+multiple platforms (such as Android, iOS, macOS) while keeping a single portable codebase.
 
 ### Code Sample
 The following is a complete code example that you can use to test the `harnessappdemodarkmode` Flag you created on the Harness Platform. When you run the code it will:
