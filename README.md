@@ -31,7 +31,7 @@ If building from source you will need [.Net 7.0.404](https://dotnet.microsoft.co
 ## Quickstart
 To follow along with our test code sample, make sure you’ve:
 
-- [Created a Feature Flag on the Harness Platform](https://ngdocs.harness.io/article/1j7pdkqh7j-create-a-feature-flag) called `test`
+- [Created a Feature Flag on the Harness Platform](https://ngdocs.harness.io/article/1j7pdkqh7j-create-a-feature-flag) called `harnessappdemodarkmode`
 - [Created a client SDK key and made a copy of it](https://developer.harness.io/docs/feature-flags/get-started/java-quickstart#create-an-sdk-key)
 
 ### Install the SDK
