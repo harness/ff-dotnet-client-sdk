@@ -112,7 +112,7 @@ public static class Program
         for (var i = 1; i < 100; i++)
         {
             var value = client.BoolVariation(flagName, false);
-
+            
             Console.Out.WriteLine("flag {0} = {1}", flagName, value);
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
