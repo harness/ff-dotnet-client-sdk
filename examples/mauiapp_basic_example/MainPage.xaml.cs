@@ -5,7 +5,7 @@ namespace MauiApp_basic;
 public partial class MainPage : ContentPage
 {
 	int _counter = 0;
-	ObservableCollection<String> _lines = ["line1", "line2"];
+	ObservableCollection<String> _lines = ["", ""];
 	private IFeatureFlagsContext? _ffService;
 	private readonly IDispatcherTimer _timer;
 
@@ -34,7 +34,7 @@ public partial class MainPage : ContentPage
 			{
 				_counter++;
 				var flagResult = _ffService.IsTestFlagEnabled();
-				PrintLine(_counter + " - flag is " + flagResult);
+				PrintLine(_counter + " - "+ FeatureFlagsContext.TestFlagIdentifier + " is " + flagResult);
 			}
 			catch (Exception ex)
 			{

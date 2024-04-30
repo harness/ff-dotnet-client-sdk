@@ -23,8 +23,6 @@ public static class Program
                 .WriteTo.Console()
                 .CreateLogger());
 
-
-
         var config = FfConfig.Builder().LoggerFactory(loggerFactory).Debug(true).Build();
 
         /*
@@ -34,7 +32,7 @@ public static class Program
             new Dictionary<string, string> { { "email", "person@myorg.com" }});
 
         /*
-         * Setup the SDK
+         * Set up the SDK. It implements IDisposable, 'using' will free it when it goes out of scope
          */
         using var client = new FfClient();
         client.Initialize(apiKey, config, target);
