@@ -43,7 +43,6 @@ public partial class MainPage : ContentPage
 		});
 	}
 
-
 	private void OnResetClicked(object sender, EventArgs e)
 	{
 		_lines.Clear();
