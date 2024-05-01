@@ -47,7 +47,7 @@ This is a generic .NET application that targets `.net8.0`. It will create an SDK
 iterations and exit. While it is running changing the flag  `harnessappdemodarkmode` via the UI will show the state in the console output.
 
 ### MAUI
-See [mauiapp_basic_example](mauiapp_basic_example).
+See [mauiapp_basic_example](examples/mauiapp_basic_example).
 
 This is an example that shows you the client SDK working inside a [MAUI](https://dotnet.microsoft.com/en-us/apps/maui) app. MAUI allows you to deploy and target
 multiple platforms (such as Android, iOS, macOS) while keeping a single portable codebase.
