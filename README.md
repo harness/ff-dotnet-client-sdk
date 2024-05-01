@@ -12,7 +12,7 @@ provides a full code sample for you to try out.
 This is a client SDK. For .NET Harness provides both client and server
 SDKs. You should choose the correct one for your needs. A client SDK
 should typically be used in environments where network bandwidth and
-processing power are limited. A client API key provides restricted access
+processing power are limited like MAUI. A client API key provides restricted access
 to flag state for one target only. Whereas a server SDK will download rule
 information and process evaluations locally for many targets. A server
 SDK API key should only be used in secure environments. See
@@ -51,6 +51,8 @@ See [mauiapp_basic_example](mauiapp_basic_example).
 
 This is an example that shows you the client SDK working inside a [MAUI](https://dotnet.microsoft.com/en-us/apps/maui) app. MAUI allows you to deploy and target
 multiple platforms (such as Android, iOS, macOS) while keeping a single portable codebase.
+
+![MAUI example app](readme/maui_preview.png "MAUI")
 
 ### Code Sample
 The following is a complete code example that you can use to test the `harnessappdemodarkmode` Flag you created on the Harness Platform. When you run the code it will:

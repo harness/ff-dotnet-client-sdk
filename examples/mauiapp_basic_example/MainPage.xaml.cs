@@ -8,7 +8,7 @@ namespace MauiApp_basic;
 
 public partial class MainPage : ContentPage
 {
-	private readonly ObservableCollection<String> _lines = ["Output"];
+	private readonly ObservableCollection<String> _lines = ["---------- Output ----------"];
 	private readonly IFeatureFlagsContext _ffService;
 	private readonly IDispatcherTimer _timer;
 	private int _counter = 0;

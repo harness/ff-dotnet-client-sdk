@@ -28,7 +28,7 @@
 
             <Button
                 x:Name="ResetBtn"
-                Text="Reset"
+                Text="Reset Output"
                 SemanticProperties.Hint="Reset output"
                 Clicked="OnResetClicked"
                 HorizontalOptions="Fill" />
