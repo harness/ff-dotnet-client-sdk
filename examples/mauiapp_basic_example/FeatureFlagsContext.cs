@@ -9,8 +9,8 @@ public class FeatureFlagsContext : IFeatureFlagsContext
 {
     private readonly FfClient _ffClient;
 
-    private readonly bool _initFailed;
-    private readonly Exception _initException;
+    private bool _failed;
+    private Exception _failedException;
 
     internal static readonly string TestFlagIdentifier = "harnessappdemodarkmode";
     internal static readonly string TestApiKey = ""; // <--- ENTER YOUR API KEY HERE
@@ -38,20 +38,30 @@ public class FeatureFlagsContext : IFeatureFlagsContext
         catch (Exception ex)
         {
            Trace.WriteLine("Exception in FeatureFlagsContext: " + ex);
-           _initFailed = true;
-           _initException = ex;
+           _failed = true;
+           _failedException = ex;
         }
     }
 
-    public bool InitFailed(out Exception ex)
+    public bool HasFailed(out Exception ex)
     {
-        ex = _initException;
-        return _initFailed;
+        ex = _failedException;
+        return _failed;
     }
 
     public bool IsFlagEnabled()
     {
-        return _ffClient.BoolVariation(TestFlagIdentifier, false);
+        try
+        {
+            return _ffClient.BoolVariation(TestFlagIdentifier, false);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine("Exception in IsFlagEnabled: " + ex);
+            _failed = true;
+            _failedException = ex;
+            return false;
+        }
     }
 
     public void Dispose()

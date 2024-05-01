@@ -26,7 +26,7 @@ public partial class MainPage : ContentPage
 
 	private void OnTick2()
 	{
-		if (_ffService.InitFailed(out var exception))
+		if (_ffService.HasFailed(out var exception))
 		{
 			PrintLine(GetInnerExceptionNames(exception));
 			_timer.Stop();
@@ -50,6 +50,12 @@ public partial class MainPage : ContentPage
 
 	private void OnResetClicked(object sender, EventArgs e)
 	{
+		if (_ffService.HasFailed(out var _))
+		{
+			// don't wipe the error message if we're in a failed state. e.g. missing SDK key
+			return;
+		}
+
 		_lines.Clear();
 		_counter = 0;
 		Lines.ItemsSource = _lines;
