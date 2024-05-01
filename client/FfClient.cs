@@ -54,6 +54,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
             } catch (Exception e) {
                 _sdkThread?.Dispose();
                 _logger.LogWarning(e, e.Message);
+                if (e is FfClientException) throw;
                 throw new FfClientException("Initialize failed", e);
             }
         }

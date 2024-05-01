@@ -2,5 +2,6 @@ namespace MauiApp_basic;
 
 public interface IFeatureFlagsContext : IDisposable
 {
-    public bool IsTestFlagEnabled();
+    public bool IsFlagEnabled();
+    public bool InitFailed(out Exception ex);
 }

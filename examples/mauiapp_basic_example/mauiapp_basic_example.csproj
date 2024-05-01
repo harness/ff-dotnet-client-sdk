@@ -62,14 +62,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 
 		<PackageReference Include="ff-dotnet-client-sdk" />
-		<!--
-		<PackageReference Include="NLog.Targets.MauiLog" Version="8.*" />
-		<PackageReference Include="NLog.Extensions.Logging" Version="5.*" />
 
-
-
-		<PackageReference Include="MetroLog.Maui" Version="2.1.0" />
-		-->
 	</ItemGroup>
 
 </Project>

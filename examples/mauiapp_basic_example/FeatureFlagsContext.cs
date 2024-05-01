@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using io.harness.ff_dotnet_client_sdk.client;
 using io.harness.ff_dotnet_client_sdk.client.dto;
 using Microsoft.Extensions.Logging;
@@ -8,27 +9,47 @@ public class FeatureFlagsContext : IFeatureFlagsContext
 {
     private readonly FfClient _ffClient;
 
+    private readonly bool _initFailed;
+    private readonly Exception _initException;
+
     internal static readonly string TestFlagIdentifier = "harnessappdemodarkmode";
+    internal static readonly string TestApiKey = ""; // <--- ENTER YOUR API KEY HERE
 
     public FeatureFlagsContext(ILoggerFactory loggerFactory)
     {
-        var config = FfConfig.Builder()
-            .LoggerFactory(loggerFactory)
-            .SetStreamEnabled(true)
-            .Debug(true)
-            .Build();
+        try
+        {
 
-        FfTarget target = new FfTarget("dotnetclientsdk_maui", ".NET Client SDK MAUI",
-            new Dictionary<string, string> { { "email", "person@myorg.com" }});
+            var config = FfConfig.Builder()
+                .LoggerFactory(loggerFactory)
+                .SetStreamEnabled(true)
+                .Debug(true)
+                .Build();
 
-        var client = new FfClient();
-        client.Initialize(Environment.GetEnvironmentVariable("FF_API_KEY"), config, target);
-        client.WaitForInitialization();
+            FfTarget target = new FfTarget("dotnetclientsdk_maui", ".NET Client SDK MAUI",
+                new Dictionary<string, string> { { "email", "person@myorg.com" } });
 
-        _ffClient = client;
+            var client = new FfClient();
+            client.Initialize(TestApiKey, config, target);
+            client.WaitForInitialization();
+
+            _ffClient = client;
+        }
+        catch (Exception ex)
+        {
+           Trace.WriteLine("Exception in FeatureFlagsContext: " + ex);
+           _initFailed = true;
+           _initException = ex;
+        }
     }
 
-    public bool IsTestFlagEnabled()
+    public bool InitFailed(out Exception ex)
+    {
+        ex = _initException;
+        return _initFailed;
+    }
+
+    public bool IsFlagEnabled()
     {
         return _ffClient.BoolVariation(TestFlagIdentifier, false);
     }
