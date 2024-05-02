@@ -41,16 +41,16 @@ dotnet add package ff-dotnet-client-sdk
 ## Examples
 
 ### Getting started
-See [getting_started](getting_started)
+See [Getting Started example](examples/getting_started)
 
 This is a generic .NET application that targets `.net8.0`. It will create an SDK instance with a target (plus some attributes) and loop for several
 iterations and exit. While it is running changing the flag  `harnessappdemodarkmode` via the UI will show the state in the console output.
 
 ### MAUI
-See [mauiapp_basic_example](examples/mauiapp_basic_example).
+See [MAUI example app](examples/mauiapp_basic_example/README.md).
 
 This is an example that shows you the client SDK working inside a [MAUI](https://dotnet.microsoft.com/en-us/apps/maui) app. MAUI allows you to deploy and target
-multiple platforms (such as Android, iOS, macOS) while keeping a single portable codebase.
+multiple platforms (such as Android, iOS, macOS) while keeping a single portable C# codebase.
 
 ![MAUI example app](readme/maui_preview.png "MAUI")
 
@@ -95,7 +95,8 @@ public static class Program
             new Dictionary<string, string> { { "email", "person@myorg.com" }});
 
         /*
-         * Set up the SDK. It implements `IDisposable`, 'using' will free it when it goes out of scope
+         * Set up the SDK.
+         * It implements `IDisposable`, 'using' will free it when it goes out of scope
          */
         using var client = new FfClient();
         client.Initialize(apiKey, config, target);
