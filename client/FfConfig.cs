@@ -20,7 +20,9 @@ namespace io.harness.ff_dotnet_client_sdk.client
         public List<X509Certificate2> TlsTrustedCAs { get; }
         public ILoggerFactory LoggerFactory { get; }
 
-        internal FfConfig(string configUrl, string eventUrl, int pollIntervalInSeconds, int metricsIntervalInSeconds, bool streamEnabled, bool analyticsEnabled, int metricsCapacity, bool debug, List<X509Certificate2> tlsTrustedCAs, ILoggerFactory loggerFactory)
+        public INetworkChecker NetworkChecker { get; }
+
+        internal FfConfig(string configUrl, string eventUrl, int pollIntervalInSeconds, int metricsIntervalInSeconds, bool streamEnabled, bool analyticsEnabled, int metricsCapacity, bool debug, List<X509Certificate2> tlsTrustedCAs, ILoggerFactory loggerFactory, INetworkChecker networkChecker)
         {
             ConfigUrl = configUrl;
             EventUrl = eventUrl;
@@ -32,6 +34,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
             Debug = debug;
             TlsTrustedCAs = tlsTrustedCAs;
             LoggerFactory = loggerFactory;
+            NetworkChecker = networkChecker;
         }
 
         public static ConfigBuilder Builder()
@@ -62,10 +65,11 @@ namespace io.harness.ff_dotnet_client_sdk.client
         private bool _debug = false;
         private List<X509Certificate2> _tlsTrustedCAs = new ();
         private ILoggerFactory _loggerFactory = DefaultLoggerFactory;
+        private INetworkChecker _networkChecker = new NullNetworkChecker();
 
         public FfConfig Build()
         {
-            return new FfConfig(_configUrl, _eventUrl, _pollIntervalInSeconds, _metricsIntervalInSeconds, _streamEnabled, _analyticsEnabled, _metricsCapacity, _debug, _tlsTrustedCAs, _loggerFactory);
+            return new FfConfig(_configUrl, _eventUrl, _pollIntervalInSeconds, _metricsIntervalInSeconds, _streamEnabled, _analyticsEnabled, _metricsCapacity, _debug, _tlsTrustedCAs, _loggerFactory, _networkChecker);
         }
 
         public ConfigBuilder SetPollingInterval(int pollIntervalInSeconds)
@@ -116,6 +120,12 @@ namespace io.harness.ff_dotnet_client_sdk.client
             return this;
         }
 
+        public ConfigBuilder NetworkChecker(INetworkChecker networkChecker)
+        {
+            _networkChecker = networkChecker;
+            return this;
+        }
+
         /**
           * <summary>
           *     List of trusted CAs - for when the given config/event URLs are signed with a private CA. You
@@ -135,4 +145,17 @@ namespace io.harness.ff_dotnet_client_sdk.client
             return this;
         }
     }
+
+    public interface INetworkChecker
+    {
+        bool IsNetworkAvailable();
+    }
+
+    internal class NullNetworkChecker : INetworkChecker {
+        public bool IsNetworkAvailable()
+        {
+            return true;
+        }
+    }
+
 }

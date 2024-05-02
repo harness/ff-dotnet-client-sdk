@@ -15,6 +15,20 @@ public class FeatureFlagsContext : IFeatureFlagsContext
     internal static readonly string TestFlagIdentifier = "harnessappdemodarkmode";
     internal static readonly string TestApiKey = ""; // <--- ENTER YOUR API KEY HERE
 
+    private class MauiNetworkChecker : INetworkChecker
+    {
+        /*
+         * By default, the SDK is generic and doesn't support MAUI network detection out of the box. The SDK assumes it
+         * always has a connection to the network. If running under MAUI/iOS, MAUI/Android or similar mobile device then
+         * we need to provide a network connection tester like below else you will get a lot of exceptions logged on
+         * the device. The SDK will call this function before attempting to poll, connect to a stream or push metrics.
+         */
+        public bool IsNetworkAvailable()
+        {
+            return Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+        }
+    }
+
     public FeatureFlagsContext(ILoggerFactory loggerFactory)
     {
         try
@@ -24,6 +38,7 @@ public class FeatureFlagsContext : IFeatureFlagsContext
                 .LoggerFactory(loggerFactory)
                 .SetStreamEnabled(true)
                 .Debug(true)
+                .NetworkChecker(new MauiNetworkChecker())
                 .Build();
 
             FfTarget target = new FfTarget("dotnetclientsdk_maui", ".NET Client SDK MAUI",

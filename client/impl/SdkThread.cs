@@ -35,11 +35,13 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly ConcurrentDictionary<string, Evaluation> _cache;
         private readonly CountdownEvent _sdkReadyLatch = new(1);
         private readonly Thread _thread;
+        private readonly INetworkChecker _networkChecker;
 
         /* Mutable state */
         private ClientApi? _api;
         private AuthInfo? _authInfo;
         private volatile bool _abortFlag;
+        private bool _disposed = false;
 
         internal SdkThread(string apiKey, FfConfig config, FfTarget ffTarget, ILoggerFactory loggerFactory)
         {
@@ -49,6 +51,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             _config = config;
             _ffTarget = ffTarget;
             _cache = new ConcurrentDictionary<string, Evaluation>();
+            _networkChecker = config.NetworkChecker;
             _thread = new Thread(Run);
             _thread.Start();
         }
@@ -102,14 +105,23 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 }
 
             }
+
+            if (IsNetworkUnavailable())
+                throw new NetworkOffline();
         }
 
-        AuthInfo Authenticate(ClientApi api, string apiKey, FfTarget ffTarget)
+        private AuthInfo Authenticate(ClientApi api, string apiKey, FfTarget ffTarget)
         {
             if (string.IsNullOrWhiteSpace(apiKey)) {
                 const string errorMsg = "SDKCODE(init:1002):The SDK has failed to initialize due to a missing or empty API key.";
                 _logger.LogError(errorMsg);
                 throw new FfClientException(errorMsg);
+            }
+
+            if (IsNetworkUnavailable())
+            {
+                _logger.LogInformation("Will not auth, network offline");
+                throw new NetworkOffline();
             }
 
             var authTarget = new AuthenticationRequestTarget(ffTarget.Identifier, ffTarget.Name, false, ffTarget.Attributes);
@@ -142,7 +154,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             api.Configuration.DefaultHeaders.Clear();
             AddSdkHeaders(api.Configuration.DefaultHeaders, authInfo);
 
-
             PollOnce(api, authInfo);
 
             SdkCodes.InfoSdkAuthOk(_logger, SdkVersion);
@@ -159,14 +170,16 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             private readonly ClientApi _api;
             private readonly FfTarget _target;
             private readonly CountdownEvent _endStreamLatch = new(1);
+            private readonly FfConfig _config;
 
-            internal StreamSourceListener(SdkThread sdkThread, ClientApi api, AuthInfo authInfo, FfTarget target, ILoggerFactory loggerFactory)
+            internal StreamSourceListener(SdkThread sdkThread, ClientApi api, AuthInfo authInfo, FfTarget target, ILoggerFactory loggerFactory, FfConfig config)
             {
                 _logger = loggerFactory.CreateLogger<StreamSourceListener>();
                 _this = sdkThread;
                 _api = api;
                 _authInfo = authInfo;
                 _target = target;
+                _config = config;
             }
 
             public void SseStart()
@@ -175,9 +188,17 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 SdkCodes.InfoStreamConnected(_logger);
             }
 
-            public void SseEnd(string reason)
+            public void SseEnd(string reason, Exception? cause)
             {
                 SdkCodes.InfoStreamStopped(_logger, reason);
+                if (cause != null)
+                {
+                    if (cause is NetworkOffline)
+                        _logger.LogInformation("SSE network went offline");
+                    else
+                        LogUtils.LogExceptionAndWarn(_logger, _config, "Stream end exception", cause);
+                }
+
                 _endStreamLatch.Signal();
                 _this.PollOnce(_api, _authInfo);
             }
@@ -234,6 +255,10 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         bool Stream(ClientApi api, AuthInfo authInfo)
         {
+            if (IsNetworkUnavailable()) {
+                throw new NetworkOffline();
+            }
+
             if (!_config.StreamEnabled)
             {
                 return false;
@@ -241,7 +266,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
             var streamUrl = _config.ConfigUrl + "/stream?cluster=" + authInfo.ClusterIdentifier;
 
-            var listener = new StreamSourceListener(this, api, authInfo, _ffTarget, _loggerFactory);
+            var listener = new StreamSourceListener(this, api, authInfo, _ffTarget, _loggerFactory, _config);
             using var eventSource = new EventSource(authInfo, streamUrl, _config, listener, _loggerFactory);
             _ = eventSource.Start();
             listener.WaitForStreamToEnd();
@@ -262,6 +287,11 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         private List<Evaluation> PollOnce(ClientApi api, AuthInfo authInfo)
         {
+            if (IsNetworkUnavailable())
+            {
+                throw new NetworkOffline();
+            }
+
             var evaluations =
                 api.GetEvaluations(authInfo.Environment, _ffTarget.Identifier, authInfo.ClusterIdentifier);
 
@@ -299,6 +329,12 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                     _api?.Dispose();
                     _api = MakeClientApi();
                     MainSdkThread(_api);
+                }
+                catch (NetworkOffline ex)
+                {
+                    LogUtils.LogException(_config, ex);
+                    WaitForNetworkToGoOnline();
+                    continue;
                 }
                 catch (Exception ex)
                 {
@@ -363,6 +399,8 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
         public void Dispose()
         {
+            if (_disposed) return;
+
             _abortFlag = true;
             _thread.Interrupt();
             if (!_thread.Join(TimeSpan.FromMinutes(1)))
@@ -371,11 +409,41 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             }
             _loggerFactory.Dispose();
             _api?.Dispose();
+            _disposed = true;
         }
 
-        public AuthInfo? GetAuthInfo()
+        internal AuthInfo? GetAuthInfo()
         {
             return _authInfo;
+        }
+
+        internal bool IsNetworkUnavailable()
+        {
+            return !_networkChecker.IsNetworkAvailable();
+        }
+
+        internal void WaitForNetworkToGoOnline()
+        {
+            _logger.LogInformation("Network is offline, SDK going to sleep");
+
+            int counter = 30;
+            do {
+                try {
+                    if (_networkChecker.IsNetworkAvailable()) {
+                        _logger.LogInformation("Network is online, restarting SDK");
+                        return;
+                    }
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                } catch (ThreadInterruptedException ex) {
+                    if (_abortFlag) return;
+                    LogUtils.LogException(_config, ex);
+                }
+            } while (counter-- > 0);
+        }
+
+        internal class NetworkOffline : Exception
+        {
+            internal NetworkOffline() : base("No Internet") {}
         }
     }
 }

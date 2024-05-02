@@ -34,6 +34,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         private readonly FrequencyMap<Analytics> _frequencyMap = new();
         private readonly MetricsApi _api;
         private readonly AuthInfo _authInfo;
+        private readonly INetworkChecker _networkChecker;
 
         private int _evalCounter;
         private int _metricsEvaluationsDropped;
@@ -48,6 +49,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             _maxFreqMapSize = Clamp(config.MetricsCapacity, 2048, MaxFreqMapToRetain);
             _api = MakeClientApi(authInfo, loggerFactory);
             _authInfo = authInfo;
+            _networkChecker = config.NetworkChecker;
             _thread = new Thread(Run);
             _thread.Start();
         }
@@ -85,7 +87,15 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                     if (_config.Debug)
                         _logger.LogInformation("Pushing metrics to server");
 
-                    FlushMetrics();
+                    if (_networkChecker.IsNetworkAvailable())
+                    {
+                        FlushMetrics();
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Network is offline, skipping metrics post");
+                    }
+
                     Thread.Sleep(delay);
                 }
                 catch (Exception ex)

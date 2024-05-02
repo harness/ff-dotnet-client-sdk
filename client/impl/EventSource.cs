@@ -20,8 +20,8 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
     {
         /// SSE stream started ok
         void SseStart();
-        /// SSE stream ended
-        void SseEnd(string reason);
+        /// SSE stream ended, if stream ended because of an error then cause will be non-null
+        void SseEnd(string reason, Exception? cause);
         /// Indicates callback to server required to get flag state
         void SseEvaluationChange(string identifier);
         /// Event includes evaluations payload, cache can be updated immediately with no callback
@@ -36,7 +36,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
     internal class EventSource : IDisposable
     {
         private readonly ILogger<EventSource> _logger;
-        //private readonly AuthInfo _authInfo;
         private readonly string _url;
         private readonly FfConfig _config;
         private readonly HttpClient _httpClient;
@@ -51,20 +50,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             _callback = callback;
             _logger = loggerFactory.CreateLogger<EventSource>();
         }
-
-
-        /*
-                 private MetricsApi MakeClientApi(AuthInfo authInfo, ILoggerFactory loggerFactory)
-           {
-               var client = TlsUtils.CreateHttpClientWithTls(_config, loggerFactory);
-               client.BaseAddress = new Uri(_config.EventUrl);
-               client.Timeout = TimeSpan.FromMilliseconds(SdkThread.DefaultTimeoutMs);
-               var api = new MetricsApi(client, _config.EventUrl);
-               api.Configuration.DefaultHeaders.Clear();
-               SdkThread.AddSdkHeaders(api.Configuration.DefaultHeaders, authInfo);
-               return api;
-           }
-         */
 
         private static HttpClient MakeHttpClient(AuthInfo authInfo, FfConfig config, ILoggerFactory loggerFactory)
         {
@@ -129,17 +114,13 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                     ProcessMessage(jsonMessage["data"]);
                 }
 
-                _callback.SseEnd("End of stream");
+                _callback.SseEnd("End of stream", null);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "EventSource threw an error: {Reason}", e.Message);
-                if (_config.Debug)
-                    Debug.WriteLine(e.ToString());
-
-                _callback.SseEnd(e.Message);
+                SdkCodes.LogUtils.LogExceptionAndWarn(_logger, _config, "EventSource threw an error: " + e.Message, e);
+                _callback.SseEnd(e.Message, e);
             }
-
         }
 
         private void ProcessMessage(JToken? data)
