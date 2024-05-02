@@ -1,0 +1,10 @@
+.vs
+bin
+obj
+.vscode
+*.user
+*.bak
+.idea
+tests/ff-server-sdk-test/junit.xml
+.DS_Store
+

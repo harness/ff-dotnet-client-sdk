@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ff-dotnet-client-sdk", "ff-dotnet-client-sdk.csproj", "{AF311268-048B-4DAD-868E-46D481AD842B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "getting_started", "examples\getting_started\getting_started.csproj", "{4C066FF3-DE0E-4FC1-8CA1-A643C771A48C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ff-client-sdk-test", "tests\ff-client-sdk-test\ff-client-sdk-test.csproj", "{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mauiapp_basic_example", "examples\mauiapp_basic_example\mauiapp_basic_example.csproj", "{CB88842A-0A22-4E0D-98BE-04035F1CE79B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF311268-048B-4DAD-868E-46D481AD842B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF311268-048B-4DAD-868E-46D481AD842B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF311268-048B-4DAD-868E-46D481AD842B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF311268-048B-4DAD-868E-46D481AD842B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C066FF3-DE0E-4FC1-8CA1-A643C771A48C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C066FF3-DE0E-4FC1-8CA1-A643C771A48C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C066FF3-DE0E-4FC1-8CA1-A643C771A48C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C066FF3-DE0E-4FC1-8CA1-A643C771A48C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CC0D88C-FD32-4C46-9CAA-80E064FE5792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB88842A-0A22-4E0D-98BE-04035F1CE79B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

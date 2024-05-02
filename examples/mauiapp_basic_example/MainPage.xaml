@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp_basic.MainPage">
+
+
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+
+            <Image
+                Source="ff_logo.png"
+                HeightRequest="185"
+                Aspect="AspectFit"
+                SemanticProperties.Description="FF logo" />
+
+            <Label
+            x:Name="MainLabel"
+                Text="ff-dotnet-client-sdk example"
+                Style="{StaticResource Headline}"
+                SemanticProperties.HeadingLevel="Level1" />
+
+            <Label
+                Text=".NET MAUI"
+                Style="{StaticResource SubHeadline}"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
+
+            <Button
+                x:Name="ResetBtn"
+                Text="Reset Output"
+                SemanticProperties.Hint="Reset output"
+                Clicked="OnResetClicked"
+                HorizontalOptions="Fill" />
+
+            <Grid RowDefinitions="*" ColumnDefinitions="*">
+                <CollectionView x:Name="Lines" HeightRequest="450" ItemsUpdatingScrollMode="KeepLastItemInView"/>
+            </Grid>
+        </VerticalStackLayout>
+
+
+</ContentPage>
