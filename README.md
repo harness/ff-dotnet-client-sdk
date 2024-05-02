@@ -12,7 +12,7 @@ provides a full code sample for you to try out.
 This is a client SDK. For .NET Harness provides both client and server
 SDKs. You should choose the correct one for your needs. A client SDK
 should typically be used in environments where network bandwidth and
-processing power are limited like MAUI. A client API key provides restricted access
+processing power are limited like desktop apps or MAUI apps. A client API key provides restricted access
 to flag state for one target only. Whereas a server SDK will download rule
 information and process evaluations locally for many targets. A server
 SDK API key should only be used in secure environments. See
