@@ -123,10 +123,9 @@ pipeline:
                       identifier: Publish
                       spec:
                         connectorRef: DockerHub
-                        image: mcr.microsoft.com/dotnet/sdk:7.0
+                        image: mcr.microsoft.com/dotnet/sdk:8.0
                         shell: Sh
-                        command: |
-
+                        command: |-
                           dotnet pack
                           dotnet nuget push /harness/bin/Debug/ff-dotnet-client-sdk.<+eventPayload.release.tag_name>.nupkg --api-key <+pipeline.variables.nuget_token> --source https://api.nuget.org/v3/index.json
                       when:
