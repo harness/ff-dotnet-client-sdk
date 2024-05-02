@@ -98,15 +98,23 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
 
                     Thread.Sleep(delay);
                 }
+                catch (ApiException ex)
+                {
+                    SdkCodes.WarnPostingMetricsFailed(_logger, "HTTP code " + ex.ErrorCode);
+                    LogUtils.LogException(_config, ex);
+                }
                 catch (Exception ex)
                 {
                     if (!_abortFlag)
                     {
                         SdkCodes.WarnPostingMetricsFailed(_logger, ex.Message);
                         LogUtils.LogException(_config, ex);
-                        Thread.Sleep(delay);
                     }
                 }
+
+                if (!_abortFlag)
+                    Thread.Sleep(delay);
+
             } while (!_abortFlag);
 
             FlushMetrics();

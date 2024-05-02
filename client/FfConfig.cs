@@ -72,13 +72,13 @@ namespace io.harness.ff_dotnet_client_sdk.client
             return new FfConfig(_configUrl, _eventUrl, _pollIntervalInSeconds, _metricsIntervalInSeconds, _streamEnabled, _analyticsEnabled, _metricsCapacity, _debug, _tlsTrustedCAs, _loggerFactory, _networkChecker);
         }
 
-        public ConfigBuilder SetPollingInterval(int pollIntervalInSeconds)
+        public ConfigBuilder SetPollingInterval(int pollIntervalInSeconds = 60)
         {
             _pollIntervalInSeconds = Math.Max(MinIntervalSeconds, pollIntervalInSeconds);
             return this;
         }
 
-        public ConfigBuilder SetMetricsInterval(int metricsIntervalInSeconds)
+        public ConfigBuilder SetMetricsInterval(int metricsIntervalInSeconds = 60)
         {
             _metricsIntervalInSeconds = Math.Max(MinIntervalSeconds, metricsIntervalInSeconds);
             return this;
@@ -120,7 +120,7 @@ namespace io.harness.ff_dotnet_client_sdk.client
          * too noisy for logs (e.g. polling)
          * </summary>
          */
-        public ConfigBuilder Debug(bool debug)
+        public ConfigBuilder Debug(bool debug = false)
         {
             _debug = debug;
             return this;

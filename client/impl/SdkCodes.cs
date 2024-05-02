@@ -87,7 +87,13 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 var builder = new StringBuilder();
                 while (ex != null)
                 {
-                    builder.Insert(0, " > ").Insert(0, ex.GetType().Name);
+                    var builder2 = new StringBuilder();
+                    builder2.Append(ex.GetType().Name);
+                    builder2.Append('(');
+                    builder2.Append(ex.Message);
+                    builder2.Append(')');
+
+                    builder.Insert(0, " > ").Insert(0, builder2.ToString());
                     ex = ex.InnerException;
                 }
 
