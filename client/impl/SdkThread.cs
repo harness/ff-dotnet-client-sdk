@@ -90,7 +90,7 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             }
             catch (Exception ex)
             {
-                LogUtils.LogExceptionAndWarn(_logger, _config, "Stream failed", ex);
+                LogUtils.LogExceptionAndWarn(_logger, _config, "Stream failed, falling back to polling", ex);
                 fallbackToPolling = true;
             }
 
@@ -103,7 +103,6 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 } finally {
                     SdkCodes.InfoPollingStopped(_logger);
                 }
-
             }
 
             if (IsNetworkUnavailable())
@@ -176,6 +175,8 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             private readonly CountdownEvent _endStreamLatch = new(1);
             private readonly FfConfig _config;
 
+            private Exception? _failureCause;
+
             internal StreamSourceListener(SdkThread sdkThread, ClientApi api, AuthInfo authInfo, FfTarget target, ILoggerFactory loggerFactory, FfConfig config)
             {
                 _logger = loggerFactory.CreateLogger<StreamSourceListener>();
@@ -197,6 +198,8 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                 SdkCodes.InfoStreamStopped(_logger, reason);
                 if (cause != null)
                 {
+                    _failureCause = cause;
+
                     if (cause is NetworkOffline)
                         _logger.LogInformation("SSE network went offline");
                     else
@@ -254,6 +257,12 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             public void WaitForStreamToEnd()
             {
                 _endStreamLatch.Wait();
+
+                if (_failureCause != null)
+                {
+                    _logger.LogInformation("Propagate stream exception to main thread");
+                    throw _failureCause;
+                }
             }
         }
 
@@ -281,20 +290,31 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
         {
             var pollDelayInSeconds = Math.Max(_config.PollIntervalInSeconds, 60);
 
+            int count = 0;
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(pollDelayInSeconds));
 
                 PollOnce(api, authInfo);
+
+                if (++count % 5 == 0 && _config.StreamEnabled)
+                {
+                    // if we fell back into polling (for some reason) and stream is enabled, return to the main loop
+                    // and see if we can get the stream connection back
+                    _logger.LogInformation("Attempting to recover stream connection");
+                    return;
+                }
+
             } while  (!_abortFlag);
         }
 
         private List<Evaluation> PollOnce(ClientApi api, AuthInfo authInfo)
         {
+            if (_config.Debug)
+                _logger.LogInformation("Polling for flags");
+
             if (IsNetworkUnavailable())
-            {
                 throw new NetworkOffline();
-            }
 
             var evaluations =
                 api.GetEvaluations(authInfo.Environment, _ffTarget.Identifier, authInfo.ClusterIdentifier);
@@ -348,16 +368,17 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
                     {
                         LogUtils.LogSdkCodeFromException(_logger, ex);
                         LogUtils.LogExceptionAndWarn(_logger, _config, "Root SDK exception handler invoked, SDK will be restarted in 1 minute:", ex);
-
-                        try
-                        {
-                            Thread.Sleep(TimeSpan.FromMinutes(1));
-                        }
-                        catch (ThreadInterruptedException tiex)
-                        {
-                            LogUtils.LogExceptionAndWarn(_logger, _config, "SDK thread interrupted", tiex);
-                        }
                     }
+                }
+
+                try
+                {
+                    if (!_abortFlag)
+                        Thread.Sleep(TimeSpan.FromMinutes(1));
+                }
+                catch (ThreadInterruptedException tiex)
+                {
+                    LogUtils.LogExceptionAndWarn(_logger, _config, "SDK thread interrupted", tiex);
                 }
 
             } while (!_abortFlag);

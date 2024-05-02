@@ -114,6 +114,12 @@ namespace io.harness.ff_dotnet_client_sdk.client
             return this;
         }
 
+        /**
+         * <summary>
+         * Enables stack trace logging and enables certain INFO level logs that would generally be considered
+         * too noisy for logs (e.g. polling)
+         * </summary>
+         */
         public ConfigBuilder Debug(bool debug)
         {
             _debug = debug;
