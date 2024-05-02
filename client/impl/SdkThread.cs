@@ -157,7 +157,11 @@ namespace io.harness.ff_dotnet_client_sdk.client.impl
             PollOnce(api, authInfo);
 
             SdkCodes.InfoSdkAuthOk(_logger, SdkVersion);
-            _sdkReadyLatch.Signal();
+
+            if (_sdkReadyLatch.CurrentCount > 0)
+            {
+                _sdkReadyLatch.Signal();
+            }
 
             return authInfo;
         }
