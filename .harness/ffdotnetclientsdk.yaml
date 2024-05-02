@@ -126,6 +126,7 @@ pipeline:
                         image: mcr.microsoft.com/dotnet/sdk:8.0
                         shell: Sh
                         command: |-
+                          dotnet workload install maui
                           dotnet pack
                           dotnet nuget push /harness/bin/Debug/ff-dotnet-client-sdk.<+eventPayload.release.tag_name>.nupkg --api-key <+pipeline.variables.nuget_token> --source https://api.nuget.org/v3/index.json
                       when:
