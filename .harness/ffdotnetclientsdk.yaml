@@ -14,7 +14,7 @@ pipeline:
           infrastructure:
             type: KubernetesDirect
             spec:
-              connectorRef: ffplayci
+              connectorRef: ffplaycinew
               namespace: default
               automountServiceAccountToken: true
               nodeSelector: {}
@@ -46,10 +46,10 @@ pipeline:
                   name: CVE scan
                   identifier: CVE_scan
                   spec:
-                    connectorRef: platform205701
-                    image: us.gcr.io/platform-205701/ff-sdk-sto-scanner:latest
+                    connectorRef: ffplayviaharnessplatform
+                    image: us-west1-docker.pkg.dev/ff-play-335721/docker/ff-sdk-sto-scanner:latest
                     shell: Bash
-                    command: |
+                    command: |-
                       /run.sh
                       find .
                       cat output_dotnet.json
